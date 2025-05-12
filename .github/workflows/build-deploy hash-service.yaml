@@ -1,0 +1,39 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 985883769551.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: rigettidemo
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build Docker image with multiple tags
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+                     -t $ECR_REGISTRY/$ECR_REPOSITORY:build-${GITHUB_RUN_ID} .
+
+    - name: Push both tags
+      run: |
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:build-${GITHUB_RUN_ID}
