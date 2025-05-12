@@ -62,3 +62,4 @@ jobs:
         git add hash-store/values.yaml
         git commit -m "Update hash-store image tag to build-${{ github.run_id }}"
         git push origin main
+        sleep 120
